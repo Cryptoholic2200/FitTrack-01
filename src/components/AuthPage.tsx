@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Activity, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
-interface AuthPageProps {
-  onLogin: () => void;
-}
-
-export default function AuthPage({ onLogin }: AuthPageProps) {
+export default function AuthPage() {
+  const { signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,8 +17,29 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate authentication
-    onLogin();
+    handleAuth();
+  };
+
+  const handleAuth = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) throw error;
+      } else {
+        const { error } = await signUp(formData.email, formData.password, {
+          first_name: formData.firstName,
+          last_name: formData.lastName
+        });
+        if (error) throw error;
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,6 +136,12 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
             </div>
 
             {/* Email Form */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <div className="grid grid-cols-2 gap-4">
@@ -176,9 +203,14 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
 
               <button
                 type="submit"
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                disabled={loading}
+                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
               >
-                {isLogin ? 'Log In' : 'Sign Up'}
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  isLogin ? 'Log In' : 'Sign Up'
+                )}
               </button>
             </form>
 

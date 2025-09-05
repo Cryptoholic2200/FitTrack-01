@@ -1,7 +1,36 @@
 import React from 'react';
 import { MapPin, Calendar, Trophy, Target, Edit3, Settings } from 'lucide-react';
+import { useProfile } from '../hooks/useProfile';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Profile() {
+  const { user } = useAuth();
+  const { profile, loading, error } = useProfile();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-red-700">Error loading profile: {error}</p>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <p className="text-yellow-700">Profile not found</p>
+      </div>
+    );
+  }
+
   const userStats = [
     { label: 'Total Distance', value: '1,247 km', period: 'All Time' },
     { label: 'Activities', value: '156', period: 'This Year' },
@@ -36,18 +65,22 @@ export default function Profile() {
               className="w-24 h-24 rounded-full object-cover border-4 border-white/20"
             />
             <div>
-              <h1 className="text-3xl font-bold mb-2">John Runner</h1>
+              <h1 className="text-3xl font-bold mb-2">{profile.display_name || `${profile.first_name} ${profile.last_name}`}</h1>
               <div className="flex items-center space-x-4 text-white/90 mb-2">
-                <div className="flex items-center space-x-1">
-                  <MapPin className="w-4 h-4" />
-                  <span>San Francisco, CA</span>
-                </div>
+                {profile.location && (
+                  <div className="flex items-center space-x-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{profile.location}</span>
+                  </div>
+                )}
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-4 h-4" />
-                  <span>Joined March 2023</span>
+                  <span>Joined {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                 </div>
               </div>
-              <p className="text-white/90">Passionate runner and fitness enthusiast. Always chasing the next PR! 🏃‍♂️</p>
+              {profile.bio && (
+                <p className="text-white/90">{profile.bio}</p>
+              )}
             </div>
           </div>
           
