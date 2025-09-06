@@ -11,7 +11,6 @@ import Profile from './components/Profile';
 function App() {
   const { isAuthenticated, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('feed');
-  const [editMode, setEditMode] = useState(false);
 
   if (loading) {
     return (
@@ -39,7 +38,7 @@ function App() {
       case 'athletes':
         return <Athletes />;
       case 'profile':
-        return <Profile editMode={editMode} onEditModeChange={setEditMode} />;
+        return <Profile />;
       default:
         return <ActivityFeed />;
     }

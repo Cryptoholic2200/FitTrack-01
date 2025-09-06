@@ -2,20 +2,10 @@ import React from 'react';
 import { MapPin, Calendar, Trophy, Target, Edit3, Settings } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { useAuth } from '../hooks/useAuth';
-import EditProfile from './EditProfile';
 
-interface ProfileProps {
-  editMode?: boolean;
-  onEditModeChange?: (editMode: boolean) => void;
-}
-
-export default function Profile({ editMode = false, onEditModeChange }: ProfileProps) {
+export default function Profile() {
   const { user } = useAuth();
   const { profile, loading, error } = useProfile();
-
-  if (editMode) {
-    return <EditProfile onBack={() => onEditModeChange?.(false)} />;
-  }
 
   if (loading) {
     return (
@@ -95,10 +85,7 @@ export default function Profile({ editMode = false, onEditModeChange }: ProfileP
           </div>
           
           <div className="flex space-x-3">
-            <button 
-              onClick={() => onEditModeChange?.(true)}
-              className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors flex items-center space-x-2"
-            >
+            <button className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors flex items-center space-x-2">
               <Edit3 className="w-4 h-4" />
               <span>Edit Profile</span>
             </button>

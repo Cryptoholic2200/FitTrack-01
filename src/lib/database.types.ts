@@ -9,62 +9,6 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      activities: {
-        Row: {
-          id: string
-          user_id: string
-          type: 'run' | 'ride' | 'swim' | 'walk' | 'hike' | 'workout' | 'yoga' | 'crossfit' | 'other'
-          title: string
-          description: string | null
-          distance: number
-          duration: string
-          elevation_gain: number
-          calories_burned: number | null
-          average_heart_rate: number | null
-          max_heart_rate: number | null
-          route_data: Json | null
-          weather_conditions: Json | null
-          privacy_level: 'public' | 'private' | 'followers'
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          type: 'run' | 'ride' | 'swim' | 'walk' | 'hike' | 'workout' | 'yoga' | 'crossfit' | 'other'
-          title: string
-          description?: string | null
-          distance?: number
-          duration: string
-          elevation_gain?: number
-          calories_burned?: number | null
-          average_heart_rate?: number | null
-          max_heart_rate?: number | null
-          route_data?: Json | null
-          weather_conditions?: Json | null
-          privacy_level?: 'public' | 'private' | 'followers'
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          type?: 'run' | 'ride' | 'swim' | 'walk' | 'hike' | 'workout' | 'yoga' | 'crossfit' | 'other'
-          title?: string
-          description?: string | null
-          distance?: number
-          duration?: string
-          elevation_gain?: number
-          calories_burned?: number | null
-          average_heart_rate?: number | null
-          max_heart_rate?: number | null
-          route_data?: Json | null
-          weather_conditions?: Json | null
-          privacy_level?: 'public' | 'private' | 'followers'
-          created_at?: string
-          updated_at?: string
-        }
-      }
       user_profiles: {
         Row: {
           id: string

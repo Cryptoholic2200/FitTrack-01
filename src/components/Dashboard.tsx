@@ -1,78 +1,11 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
 import { TrendingUp, Target, Calendar, Award } from 'lucide-react';
-import { useActivities } from '../hooks/useActivities';
 
 export default function Dashboard() {
-  const { userActivities, loading } = useActivities();
-  const [stats, setStats] = useState({
-    weekDistance: 0,
-    monthlyActivities: 0,
-    totalDistance: 0,
-    personalBest: 'N/A'
-  });
-
-  useEffect(() => {
-    if (userActivities.length > 0) {
-      calculateStats();
-    }
-  }, [userActivities]);
-
-  const calculateStats = () => {
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    // Calculate week distance
-    const weekActivities = userActivities.filter(activity => 
-      new Date(activity.created_at) >= oneWeekAgo
-    );
-    const weekDistance = weekActivities.reduce((sum, activity) => sum + activity.distance, 0);
-
-    // Calculate monthly activities
-    const monthActivities = userActivities.filter(activity => 
-      new Date(activity.created_at) >= oneMonthAgo
-    );
-
-    // Calculate total distance
-    const totalDistance = userActivities.reduce((sum, activity) => sum + activity.distance, 0);
-
-    // Find best pace (for runs only)
-    const runs = userActivities.filter(activity => activity.type === 'run' && activity.distance > 0);
-    let bestPace = 'N/A';
-    if (runs.length > 0) {
-      let bestPaceMinutes = Infinity;
-      runs.forEach(run => {
-        const durationParts = run.duration.split(':');
-        const hours = parseInt(durationParts[0]);
-        const minutes = parseInt(durationParts[1]);
-        const seconds = parseInt(durationParts[2]);
-        const totalMinutes = hours * 60 + minutes + seconds / 60;
-        const pace = totalMinutes / run.distance;
-        if (pace < bestPaceMinutes) {
-          bestPaceMinutes = pace;
-        }
-      });
-      
-      if (bestPaceMinutes !== Infinity) {
-        const paceMin = Math.floor(bestPaceMinutes);
-        const paceSec = Math.round((bestPaceMinutes - paceMin) * 60);
-        bestPace = `${paceMin}:${paceSec.toString().padStart(2, '0')}/km`;
-      }
-    }
-
-    setStats({
-      weekDistance: Math.round(weekDistance * 10) / 10,
-      monthlyActivities: monthActivities.length,
-      totalDistance: Math.round(totalDistance * 10) / 10,
-      personalBest: bestPace
-    });
-  };
-
   const stats = [
     {
       label: 'This Week',
-      value: `${stats.weekDistance} km`,
+      value: '24.5 km',
       change: '+12%',
       trend: 'up',
       icon: TrendingUp,
@@ -80,15 +13,15 @@ export default function Dashboard() {
     },
     {
       label: 'Monthly Goal',
-      value: `${stats.totalDistance}/100 km`,
-      change: `${Math.round((stats.totalDistance / 100) * 100)}%`,
+      value: '78/100 km',
+      change: '78%',
       trend: 'up',
       icon: Target,
       color: 'text-blue-600 bg-blue-100',
     },
     {
       label: 'Activities',
-      value: stats.monthlyActivities.toString(),
+      value: '8',
       change: 'This month',
       trend: 'neutral',
       icon: Calendar,
@@ -96,7 +29,7 @@ export default function Dashboard() {
     },
     {
       label: 'Personal Best',
-      value: stats.personalBest,
+      value: '4:32/km',
       change: 'Last run',
       trend: 'neutral',
       icon: Award,
@@ -106,12 +39,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {loading && (
-        <div className="flex items-center justify-center py-4">
-          <div className="w-6 h-6 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      )}
-      
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Performance</h2>
         
@@ -170,32 +97,22 @@ export default function Dashboard() {
       {/* Recent Achievements */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Achievements</h3>
-        {userActivities.length > 0 ? (
-          <div className="space-y-4">
-            {userActivities.slice(0, 3).map((activity, index) => (
-              <div key={activity.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl">
-                  {activity.type === 'run' ? '🏃‍♂️' : 
-                   activity.type === 'ride' ? '🚴‍♂️' : 
-                   activity.type === 'swim' ? '🏊‍♂️' : '💪'}
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900">{activity.title}</h4>
-                  <p className="text-sm text-gray-600">
-                    {activity.distance > 0 ? `${activity.distance} km` : activity.duration}
-                  </p>
-                </div>
-                <span className="text-xs text-gray-500">
-                  {new Date(activity.created_at).toLocaleDateString()}
-                </span>
+        <div className="space-y-4">
+          {[
+            { title: 'New Personal Record', description: '5K run in 22:15', date: '2 days ago', icon: '🏆' },
+            { title: 'Consistency Champion', description: '7 days in a row', date: '1 week ago', icon: '🔥' },
+            { title: 'Distance Milestone', description: 'Completed 100km this month', date: '2 weeks ago', icon: '🎯' },
+          ].map((achievement, index) => (
+            <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+              <div className="text-2xl">{achievement.icon}</div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900">{achievement.title}</h4>
+                <p className="text-sm text-gray-600">{achievement.description}</p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No activities yet. Record your first activity to see achievements!</p>
-          </div>
-        )}
+              <span className="text-xs text-gray-500">{achievement.date}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
