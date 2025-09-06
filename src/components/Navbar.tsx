@@ -1,6 +1,8 @@
 import React from 'react';
+import { useState } from 'react';
 import { Activity, Home, Trophy, Users, User, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import RecordActivity from './RecordActivity';
 
 interface NavbarProps {
   activeTab: string;
@@ -9,6 +11,7 @@ interface NavbarProps {
 
 export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
   const { signOut } = useAuth();
+  const [showRecordActivity, setShowRecordActivity] = useState(false);
 
   const navItems = [
     { id: 'feed', label: 'Feed', icon: Home },
@@ -46,7 +49,10 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
             ))}
           </div>
 
-          <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors duration-200">
+          <button 
+            onClick={() => setShowRecordActivity(true)}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors duration-200"
+          >
             <Plus className="w-5 h-5" />
             <span className="hidden sm:inline">Record Activity</span>
           </button>
@@ -78,6 +84,12 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
           ))}
         </div>
       </div>
+
+      {/* Record Activity Modal */}
+      <RecordActivity 
+        isOpen={showRecordActivity} 
+        onClose={() => setShowRecordActivity(false)} 
+      />
     </nav>
   );
 }

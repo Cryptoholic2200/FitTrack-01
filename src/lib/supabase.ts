@@ -76,3 +76,66 @@ export const profiles = {
     return { data, error };
   }
 };
+
+// Activity helpers
+export const activities = {
+  create: async (activity: Database['public']['Tables']['activities']['Insert']) => {
+    const { data, error } = await supabase
+      .from('activities')
+      .insert(activity)
+      .select()
+      .single();
+    
+    return { data, error };
+  },
+
+  getUserActivities: async (userId: string, limit = 10) => {
+    const { data, error } = await supabase
+      .from('activities')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    return { data, error };
+  },
+
+  getPublicActivities: async (limit = 20) => {
+    const { data, error } = await supabase
+      .from('activities')
+      .select(`
+        *,
+        user_profiles!activities_user_id_fkey (
+          display_name,
+          first_name,
+          last_name,
+          avatar_url
+        )
+      `)
+      .eq('privacy_level', 'public')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    return { data, error };
+  },
+
+  update: async (id: string, updates: Database['public']['Tables']['activities']['Update']) => {
+    const { data, error } = await supabase
+      .from('activities')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    return { data, error };
+  },
+
+  delete: async (id: string) => {
+    const { data, error } = await supabase
+      .from('activities')
+      .delete()
+      .eq('id', id);
+    
+    return { data, error };
+  }
+};
