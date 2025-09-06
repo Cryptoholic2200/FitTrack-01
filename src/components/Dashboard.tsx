@@ -69,7 +69,7 @@ export default function Dashboard() {
     });
   };
 
-  const stats = [
+  const displayStats = [
     {
       label: 'This Week',
       value: `${stats.weekDistance} km`,
@@ -116,7 +116,7 @@ export default function Dashboard() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Performance</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
+          {displayStats.map((stat, index) => (
             <div key={index} className="text-center">
               <div className={`w-12 h-12 rounded-full ${stat.color} flex items-center justify-center mx-auto mb-3`}>
                 <stat.icon className="w-6 h-6" />
