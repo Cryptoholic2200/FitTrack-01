@@ -1,77 +1,71 @@
 import React from 'react';
+import { useEffect } from 'react';
 import ActivityCard from './ActivityCard';
+import { useActivities } from '../hooks/useActivities';
 
 export default function ActivityFeed() {
-  const activities = [
-    {
-      id: '1',
+  const { publicActivities, loading, error } = useActivities();
+
+  const formatActivityForCard = (activity: any) => {
+    const user = activity.user_profiles;
+    const displayName = user?.display_name || `${user?.first_name} ${user?.last_name}` || 'Unknown User';
+    
+    // Parse duration from PostgreSQL interval format (HH:MM:SS)
+    const durationParts = activity.duration.split(':');
+    const hours = parseInt(durationParts[0]);
+    const minutes = parseInt(durationParts[1]);
+    const seconds = parseInt(durationParts[2]);
+    
+    let formattedDuration = '';
+    if (hours > 0) {
+      formattedDuration = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      formattedDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Calculate pace if distance > 0
+    let pace = 'N/A';
+    if (activity.distance > 0) {
+      const totalMinutes = hours * 60 + minutes + seconds / 60;
+      const paceMinutes = totalMinutes / activity.distance;
+      const paceMin = Math.floor(paceMinutes);
+      const paceSec = Math.round((paceMinutes - paceMin) * 60);
+      pace = `${paceMin}:${paceSec.toString().padStart(2, '0')}/km`;
+    }
+
+    // Format timestamp
+    const createdAt = new Date(activity.created_at);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60));
+    
+    let timestamp = '';
+    if (diffInHours < 1) {
+      timestamp = 'Just now';
+    } else if (diffInHours < 24) {
+      timestamp = `${diffInHours}h ago`;
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      timestamp = `${diffInDays}d ago`;
+    }
+
+    return {
+      id: activity.id,
       user: {
-        name: 'Sarah Chen',
-        avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
+        name: displayName,
+        avatar: user?.avatar_url || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
       },
-      type: 'run' as const,
-      title: 'Morning Run in Central Park',
-      description: 'Perfect weather for a morning run! Feeling energized.',
-      distance: 8.2,
-      duration: '42:18',
-      elevation: 124,
-      pace: '5:09/km',
-      kudos: 12,
-      comments: 3,
-      timestamp: '2 hours ago',
-    },
-    {
-      id: '2',
-      user: {
-        name: 'Alex Rodriguez',
-        avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
-      },
-      type: 'ride' as const,
-      title: 'Evening Bike Commute',
-      description: 'Beat the traffic and got some exercise in!',
-      distance: 15.7,
-      duration: '1:12:45',
-      elevation: 89,
-      pace: '4:38/km',
-      kudos: 8,
-      comments: 1,
-      timestamp: '4 hours ago',
-    },
-    {
-      id: '3',
-      user: {
-        name: 'Emma Johnson',
-        avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150',
-      },
-      type: 'swim' as const,
-      title: 'Pool Training Session',
-      description: 'Working on technique and endurance. Great session!',
-      distance: 2.1,
-      duration: '1:15:30',
-      elevation: 0,
-      pace: '36:00/km',
-      kudos: 15,
-      comments: 5,
-      timestamp: '6 hours ago',
-    },
-    {
-      id: '4',
-      user: {
-        name: 'Marcus Thompson',
-        avatar: 'https://images.pexels.com/photos/769772/pexels-photo-769772.jpeg?auto=compress&cs=tinysrgb&w=150',
-      },
-      type: 'workout' as const,
-      title: 'HIIT Training',
-      description: 'Intense circuit training session. Pushed my limits today!',
-      distance: 0,
-      duration: '45:00',
-      elevation: 0,
-      pace: 'N/A',
-      kudos: 20,
-      comments: 7,
-      timestamp: '8 hours ago',
-    },
-  ];
+      type: activity.type,
+      title: activity.title,
+      description: activity.description,
+      distance: activity.distance,
+      duration: formattedDuration,
+      elevation: activity.elevation_gain,
+      pace,
+      kudos: Math.floor(Math.random() * 20) + 1, // Placeholder until we implement kudos
+      comments: Math.floor(Math.random() * 10), // Placeholder until we implement comments
+      timestamp,
+    };
+  };
 
   return (
     <div className="space-y-6">
@@ -80,9 +74,23 @@ export default function ActivityFeed() {
         <p className="text-gray-600">Stay connected with your fitness community</p>
       </div>
       
-      {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} />
-      ))}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-700">Error loading activities: {error}</p>
+        </div>
+      ) : publicActivities.length === 0 ? (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+          <p className="text-gray-600">No activities yet. Be the first to record an activity!</p>
+        </div>
+      ) : (
+        publicActivities.map((activity) => (
+          <ActivityCard key={activity.id} activity={formatActivityForCard(activity)} />
+        ))
+      )}
     </div>
   );
 }
